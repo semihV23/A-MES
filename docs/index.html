@@ -10,9 +10,13 @@
           <h3 style="margin-bottom: 15px">A-MES v0.2 <a href="about.html" style="color: white; text-decoration: none">[about]</a></h3>
         </div>
         <div class="inline-flex">
+          <div id="error" class="error" style="display: none"></div>
+        </div>
+        <div class="inline-flex">
           <label for="myid" style="flex: 1; white-space: nowrap; margin-right: 5px">ID: </label>
-          <label id="myid"></label>
+          <label id="myid">null</label>
           <label style="flex: 1; text-align: left; cursor: pointer" onclick="copyMyID()">[copy]</label>
+          <label style="flex: 1; text-align: left; cursor: pointer"><a href="index.html" style="color: white; text-decoration: none">[change]</a></label>
         </div>
         <div class="inline-flex">
           <label for="" style="flex: 1; white-space: nowrap; margin-right: 5px">Destination ID:</label>
@@ -69,9 +73,6 @@
 
     function customID() {
       if (document.getElementById("custom-id").value.length > 0) {
-        // document.getElementById("form").style.display = "block";
-        // document.getElementById("setIDForm").style.display = "none";
-        // myID = document.getElementById("custom-id").value;
         window.location.replace(`index.html?id=${document.getElementById("custom-id").value}`);
       } else {
         document.getElementById("form").style.display = "block";
@@ -103,11 +104,17 @@
     }
 
     var peer = new Peer(urlParams.get("id"));
-    // console.log(peer);
+    console.log(peer);
 
     peer.on("open", function (id) {
       myID = id;
       document.querySelector("#myid").innerHTML = myID;
+    });
+
+    peer.on("error", function (err) {
+      console.log(err);
+      document.querySelector("#error").innerHTML = err;
+      document.querySelector("#error").style.display = "block";
     });
 
     peer.on("connection", function (conn) {
@@ -125,6 +132,9 @@
     });
 
     function veriGonder() {
+      if (document.querySelector("#hedef-id").value == "") {
+        return;
+      }
       var conn = peer.connect(document.querySelector("#hedef-id").value);
       conn.on("open", function () {
         conn.send(document.querySelector("#metin").value);

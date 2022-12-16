@@ -69,3 +69,8 @@ input {
   padding: 7px;
   border-radius: 5px;
 }
+
+.error {
+  background-color: red;
+  padding: 5px;
+}
