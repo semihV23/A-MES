@@ -1,0 +1,137 @@
+<html>
+  <title>A-MES v0.2</title>
+  <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+  <meta name="viewport" content="width=device-width" />
+  <link rel="stylesheet" href="style.css" />
+  <body>
+    <div class="container">
+      <div class="form" id="form" style="display: none">
+        <div class="inline-flex">
+          <h3 style="margin-bottom: 15px">A-MES v0.2 <a href="about.html" style="color: white; text-decoration: none">[about]</a></h3>
+        </div>
+        <div class="inline-flex">
+          <label for="myid" style="flex: 1; white-space: nowrap; margin-right: 5px">ID: </label>
+          <label id="myid"></label>
+          <label style="flex: 1; text-align: left; cursor: pointer" onclick="copyMyID()">[copy]</label>
+        </div>
+        <div class="inline-flex">
+          <label for="" style="flex: 1; white-space: nowrap; margin-right: 5px">Destination ID:</label>
+          <input type="text" id="hedef-id" style="flex: auto" />
+        </div>
+        <div>
+          <textarea name="" id="metin" rows="5"></textarea>
+        </div>
+        <div>
+          <button id="gonder" onclick="veriGonder()" class="submit-button">Submit</button>
+        </div>
+        <div style="margin-top: 10px">
+          <label for="log">Log:</label><label onclick="clearLog()" style="cursor: pointer">[clear]</label>
+          <div id="log" style="overflow-wrap: break-word"></div>
+        </div>
+      </div>
+      <div class="setIDForm" id="setIDForm">
+        <div class="inline-flex">
+          <label for="" style="flex: 1; white-space: nowrap; margin-right: 5px">Benim ID'm: </label>
+          <input type="text" id="custom-id" style="flex: auto" placeholder="leave blank to randomly generate" />
+        </div>
+        <div>
+          <button id="gonder" onclick="customID()" class="set-button">Submit</button>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script>
+    function setCookie(name, value, days) {
+      var expires = "";
+      if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+        expires = "; expires=" + date.toUTCString();
+      }
+      document.cookie = name + "=" + (value || "") + expires + "; path=/";
+    }
+    function getCookie(name) {
+      var nameEQ = name + "=";
+      var ca = document.cookie.split(";");
+      for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == " ") c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+      }
+      return null;
+    }
+
+    //code
+
+    function copyMyID() {
+      navigator.clipboard.writeText(myID);
+    }
+
+    function customID() {
+      if (document.getElementById("custom-id").value.length > 0) {
+        // document.getElementById("form").style.display = "block";
+        // document.getElementById("setIDForm").style.display = "none";
+        // myID = document.getElementById("custom-id").value;
+        window.location.replace(`index.html?id=${document.getElementById("custom-id").value}`);
+      } else {
+        document.getElementById("form").style.display = "block";
+        document.getElementById("setIDForm").style.display = "none";
+      }
+    }
+
+    function changePeerIDBox(id) {
+      document.querySelector("#hedef-id").value = id;
+    }
+
+    function refreshCookie() {
+      setCookie("log", document.querySelector("#log").innerHTML);
+    }
+
+    function clearLog() {
+      document.querySelector("#log").innerHTML = "";
+      refreshCookie();
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    var peerID = "";
+    var myID = "";
+    document.querySelector("#log").innerHTML = getCookie("log");
+
+    if (urlParams.get("id") && urlParams.get("id").length > 0) {
+      document.getElementById("form").style.display = "block";
+      document.getElementById("setIDForm").style.display = "none";
+    }
+
+    var peer = new Peer(urlParams.get("id"));
+    // console.log(peer);
+
+    peer.on("open", function (id) {
+      myID = id;
+      document.querySelector("#myid").innerHTML = myID;
+    });
+
+    peer.on("connection", function (conn) {
+      peerID = conn.peer;
+      conn.on("data", function (data) {
+        // console.log(data);
+        var peedIDshort = peerID;
+        if (peerID.length >= 10) {
+          peedIDshort = peerID.split("-")[0];
+        }
+        document.querySelector("#log").innerHTML =
+          `[<label onclick="changePeerIDBox('${peerID}')" style="cursor: pointer">${peedIDshort}</label>]: ${data}<br>` + document.querySelector("#log").innerHTML;
+        refreshCookie();
+      });
+    });
+
+    function veriGonder() {
+      var conn = peer.connect(document.querySelector("#hedef-id").value);
+      conn.on("open", function () {
+        conn.send(document.querySelector("#metin").value);
+        document.querySelector("#log").innerHTML = `[me]: ${document.querySelector("#metin").value}<br>` + document.querySelector("#log").innerHTML;
+        refreshCookie();
+        document.querySelector("#metin").value = "";
+      });
+    }
+  </script>
+</html>
