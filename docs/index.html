@@ -117,7 +117,7 @@
 
     peer.on("error", function (err) {
       console.log(err);
-      document.querySelector("#error").innerHTML = err + " <label onclick='closeError()'>[x]</a>";
+      document.querySelector("#error").innerHTML = err + " <label onclick='closeError()' style='cursor: pointer'>[x]</a>";
       document.querySelector("#error").style.display = "block";
     });
 
