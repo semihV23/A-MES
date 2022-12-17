@@ -93,6 +93,10 @@
       refreshCookie();
     }
 
+    function closeError() {
+      document.querySelector("#error").style.display = "none";
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     var peerID = "";
     var myID = "";
@@ -113,7 +117,7 @@
 
     peer.on("error", function (err) {
       console.log(err);
-      document.querySelector("#error").innerHTML = err;
+      document.querySelector("#error").innerHTML = err + " <label onclick='closeError()'>[x]</a>";
       document.querySelector("#error").style.display = "block";
     });
 
