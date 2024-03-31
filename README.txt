@@ -1,1 +1,0 @@
-a web app for private messaging. using peerjs (webrtc).
